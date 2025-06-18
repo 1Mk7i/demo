@@ -1,9 +1,10 @@
 import Link from "next/link";
 
-interface BlogPostProps {
+interface PageProps {
   params: {
     slug: string;
   };
+  searchParams?: { [key: string]: string | string[] | undefined };
 }
 
 // Симуляція даних постів
@@ -79,7 +80,14 @@ const posts = {
   }
 };
 
-export default function BlogPost({ params }: BlogPostProps) {
+// Генерація статичних параметрів для всіх постів
+export async function generateStaticParams() {
+  return Object.keys(posts).map((slug) => ({
+    slug: slug,
+  }));
+}
+
+export default function BlogPost({ params }: PageProps) {
   const post = posts[params.slug as keyof typeof posts];
 
   if (!post) {
