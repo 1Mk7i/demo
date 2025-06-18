@@ -83,9 +83,10 @@ const posts = {
 // Генерація статичних параметрів для всіх постів
 export async function generateStaticParams() {
   return Object.keys(posts).map((slug) => ({
-    slug: slug,
+    params: { slug },
   }));
 }
+
 
 export default function BlogPost({ params }: PageProps) {
   const post = posts[params.slug as keyof typeof posts];
