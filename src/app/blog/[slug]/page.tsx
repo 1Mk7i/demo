@@ -1,10 +1,10 @@
 import Link from "next/link";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
-  searchParams?: { [key: string]: string | string[] | undefined };
+  }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 // Симуляція даних постів
@@ -88,8 +88,9 @@ export async function generateStaticParams() {
 }
 
 
-export default function BlogPost({ params }: PageProps) {
-  const post = posts[params.slug as keyof typeof posts];
+export default async function BlogPost({ params }: PageProps) {
+  const { slug } = await params;
+  const post = posts[slug as keyof typeof posts];
 
   if (!post) {
     return (
@@ -201,10 +202,9 @@ export default function BlogPost({ params }: PageProps) {
       
       {/* Related Articles Section */}
       <div className="mt-16 bg-white rounded-2xl shadow-xl p-8">
-        <h3 className="text-2xl font-bold mb-6 text-gray-800">Схожі статті</h3>
-        <div className="grid md:grid-cols-2 gap-6">
-          {Object.entries(posts).filter(([slug]) => slug !== params.slug).slice(0, 2).map(([slug, relatedPost]) => (
-            <Link key={slug} href={`/blog/${slug}`} className="group">
+        <h3 className="text-2xl font-bold mb-6 text-gray-800">Схожі статті</h3>        <div className="grid md:grid-cols-2 gap-6">
+          {Object.entries(posts).filter(([postSlug]) => postSlug !== slug).slice(0, 2).map(([postSlug, relatedPost]) => (
+            <Link key={postSlug} href={`/blog/${postSlug}`} className="group">
               <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-xl hover:shadow-lg transition-all duration-300 border hover:border-blue-300">
                 <h4 className="font-semibold mb-2 group-hover:text-blue-600 transition-colors">{relatedPost.title}</h4>
                 <p className="text-gray-600 text-sm">{relatedPost.author} • {new Date(relatedPost.date).toLocaleDateString("uk-UA")}</p>
