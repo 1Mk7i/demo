@@ -83,7 +83,7 @@ const posts = {
 // Генерація статичних параметрів для всіх постів
 export async function generateStaticParams() {
   return Object.keys(posts).map((slug) => ({
-    params: { slug },
+    slug,
   }));
 }
 
