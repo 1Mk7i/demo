@@ -44,8 +44,7 @@ export default function WorkProcess({
             >
               <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-3xl mx-auto mb-6 text-white shadow-lg transform hover:scale-110 transition-transform duration-300">
                 {phase.icon}
-              </div>
-              <div className="bg-gray-900 text-white text-sm font-bold px-3 py-1 rounded-full inline-block mb-4">
+              </div>              <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-bold px-3 py-1 rounded-full inline-block mb-4 shadow-md">
                 {phase.step}
               </div>
               <h3 className="text-xl font-semibold mb-3 text-gray-800">{phase.title}</h3>

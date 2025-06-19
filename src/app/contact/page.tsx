@@ -7,7 +7,8 @@ import {
   FAQ, 
   Button, 
   Section,
-  AnimationStyles 
+  AnimationStyles,
+  Map
 } from '@/components/ui';
 
 export default function Contact() {
@@ -57,25 +58,17 @@ export default function Contact() {
         </div>
       </HeroSection>
 
-      <Section>
-        <div className="max-w-4xl mx-auto">
+      <Section>        <div className="max-w-4xl mx-auto">
           <ContactInfo />
           
-          {/* Map Placeholder */}
-          <div className="mt-12 bg-white rounded-2xl shadow-xl overflow-hidden">
-            <div className="h-64 bg-gradient-to-br from-blue-100 to-purple-100 relative">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-6xl mb-4">🗺️</div>
-                  <p className="text-gray-600 font-medium">Інтерактивна карта</p>
-                  <p className="text-sm text-gray-500">вул. Інноваційна, 123, Київ</p>
-                </div>
-              </div>
-              <div className="absolute top-4 right-4 bg-white rounded-lg px-3 py-1 shadow-md">
-                <span className="text-sm text-gray-600">📍 Офіс</span>
-              </div>
-            </div>
-          </div>
+          {/* Map Component */}
+          <Map 
+            className="mt-12"
+            address="вул. Інноваційна, 123"
+            city="Київ, Україна"
+            label="Наш офіс"
+            height="h-80"
+          />
 
           <SocialIcons className="mt-12" />
         </div>

@@ -6,7 +6,7 @@ interface SocialIconsProps {
 export default function SocialIcons({ title = "Слідкуйте за мною", className = "" }: SocialIconsProps) {
   const socialLinks = [
     { platform: "LinkedIn", icon: "💼", color: "from-blue-600 to-blue-700", hover: "hover:from-blue-700 hover:to-blue-800" },
-    { platform: "GitHub", icon: "🐙", color: "from-gray-700 to-gray-900", hover: "hover:from-gray-800 hover:to-black" },
+    { platform: "GitHub", icon: "🐙", color: "from-slate-600 to-slate-700", hover: "hover:from-slate-700 hover:to-slate-800" },
     { platform: "Twitter", icon: "🐦", color: "from-sky-400 to-sky-600", hover: "hover:from-sky-500 hover:to-sky-700" },
     { platform: "Instagram", icon: "📷", color: "from-pink-500 to-purple-600", hover: "hover:from-pink-600 hover:to-purple-700" }
   ];

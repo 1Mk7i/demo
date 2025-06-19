@@ -1,3 +1,5 @@
+import { gradientClasses } from "../utils/gradients";
+
 interface ProjectStructureProps {
   title?: string;
   subtitle?: string;
@@ -10,33 +12,47 @@ export default function ProjectStructure({
   className = ""
 }: ProjectStructureProps) {
   const fileStructure = [
-    { type: 'folder', name: 'app/', level: 0 },
-    { type: 'file', name: 'page.tsx', level: 1, route: '/' },
-    { type: 'folder', name: 'about/', level: 1 },
-    { type: 'file', name: 'page.tsx', level: 2, route: '/about' },
-    { type: 'folder', name: 'blog/', level: 1 },
-    { type: 'file', name: 'page.tsx', level: 2, route: '/blog' },
-    { type: 'folder', name: '[slug]/', level: 2 },
-    { type: 'file', name: 'page.tsx', level: 3, route: '/blog/[slug]' }
+    { type: 'folder', name: 'src/', level: 0 },
+    { type: 'folder', name: 'app/', level: 1 },
+    { type: 'file', name: 'page.tsx', level: 2, route: '/' },
+    { type: 'file', name: 'layout.tsx', level: 2 },
+    { type: 'file', name: 'globals.css', level: 2 },
+    { type: 'folder', name: 'about/', level: 2 },
+    { type: 'file', name: 'page.tsx', level: 3, route: '/about' },
+    { type: 'folder', name: 'blog/', level: 2 },
+    { type: 'file', name: 'page.tsx', level: 3, route: '/blog' },
+    { type: 'folder', name: '[slug]/', level: 3 },
+    { type: 'file', name: 'page.tsx', level: 4, route: '/blog/[slug]' },
+    { type: 'folder', name: 'contact/', level: 2 },
+    { type: 'file', name: 'page.tsx', level: 3, route: '/contact' },
+    { type: 'folder', name: 'services/', level: 2 },
+    { type: 'file', name: 'page.tsx', level: 3, route: '/services' },
+    { type: 'folder', name: 'components/', level: 1 },
+    { type: 'folder', name: 'layout/', level: 2 },
+    { type: 'file', name: 'Navigation.tsx', level: 3 },
+    { type: 'file', name: 'Footer.tsx', level: 3 },
+    { type: 'folder', name: 'ui/', level: 2 },
+    { type: 'folder', name: 'buttons/', level: 3 },
+    { type: 'folder', name: 'cards/', level: 3 },
+    { type: 'folder', name: 'grids/', level: 3 },
+    { type: 'folder', name: 'sections/', level: 3 }
   ];
 
   const technologies = [
     { name: "Next.js 14+", icon: "⚛️", description: "React Framework" },
     { name: "Tailwind CSS", icon: "🎨", description: "Utility-first CSS" },
-    { name: "TypeScript", icon: "📘", description: "Type Safety" }
-  ];
-
+    { name: "TypeScript", icon: "📘", description: "Type Safety" }  ];
   return (
-    <div className={`bg-gradient-to-r from-gray-900 to-black text-white py-20 ${className}`}>
+    <div className={`${gradientClasses.projectStructureBg} text-white py-20 ${className}`}>
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold mb-6">{title}</h2>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+          <p className="text-xl text-blue-100 max-w-3xl mx-auto">
             {subtitle}
           </p>
         </div>
         
-        <div className="bg-gray-800 rounded-2xl p-8 max-w-4xl mx-auto">
+        <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 max-w-4xl mx-auto border border-white/20">
           <div className="grid md:grid-cols-2 gap-8">
             <div>
               <h3 className="text-2xl font-semibold mb-6 text-blue-400">Структура файлів</h3>
@@ -53,7 +69,7 @@ export default function ProjectStructure({
                     <span className={item.type === 'folder' ? 'text-yellow-400' : 'text-blue-400'}>
                       {item.type === 'folder' ? '📁' : '📄'}
                     </span>
-                    <span className="ml-2 text-gray-300">{item.name}</span>
+                    <span className="ml-2 text-blue-100">{item.name}</span>
                     {item.route && (
                       <span className="ml-4 text-green-400">→ {item.route}</span>
                     )}
