@@ -52,7 +52,8 @@ export default function MobileMenu({ items, isOpen, onClose, onLinkClick }: Mobi
             <div className="px-4 py-3 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl">
               <div className="flex items-center space-x-3">
                 <span className="text-2xl">📞</span>
-                <div>                  <p className="text-sm font-medium text-gray-700">Маєте питання?</p>
+                <div>                  
+                  <p className="text-sm font-medium text-gray-700">Маєте питання?</p>
                   <p className="text-xs text-gray-500">Зв&apos;яжіться з нами</p>
                 </div>
               </div>
