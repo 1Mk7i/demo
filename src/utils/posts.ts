@@ -43,11 +43,11 @@ export async function getPost(slug: string): Promise<Post | null> {
 
   // Server-side: direct file access
   try {
-    const { readFileSync } = await import('fs');
-    const { join } = await import('path');
-    const postsDir = join(process.cwd(), 'src/data/posts');
-    const filePath = join(postsDir, `${slug}.xml`);
-    const xmlContent = readFileSync(filePath, 'utf8');
+    const fs = await import('fs');
+    const path = await import('path');
+    const postsDir = path.join(process.cwd(), 'src/data/posts');
+    const filePath = path.join(postsDir, `${slug}.xml`);
+    const xmlContent = fs.readFileSync(filePath, 'utf8');
     return parseXMLPost(xmlContent);
   } catch (error) {
     console.error(`Error reading post ${slug}:`, error);
@@ -69,16 +69,16 @@ export async function getAllPosts(): Promise<PostWithSlug[]> {
 
   // Server-side: direct file access
   try {
-    const { readFileSync, readdirSync } = await import('fs');
-    const { join } = await import('path');
-    const postsDir = join(process.cwd(), 'src/data/posts');
-    const files = readdirSync(postsDir);
+    const fs = await import('fs');
+    const path = await import('path');
+    const postsDir = path.join(process.cwd(), 'src/data/posts');
+    const files = fs.readdirSync(postsDir);
     
     return files
       .filter(file => file.endsWith('.xml'))
       .map(file => {
         const slug = file.replace('.xml', '');
-        const xmlContent = readFileSync(join(postsDir, file), 'utf8');
+        const xmlContent = fs.readFileSync(path.join(postsDir, file), 'utf8');
         const post = parseXMLPost(xmlContent);
         return { ...post, slug };
       })
