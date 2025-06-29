@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <post>
   <title>Поради по NixOS</title>
-  <author>Олексій Іванов</author>
-  <date>2024-01-05</date>
+  <author>Ігор Євлахович</author>
+  <date>2024-06-29</date>
   <content>
     <![CDATA[
 NixOS - це унікальна операційна система, яка використовує декларативний підхід до конфігурації.
