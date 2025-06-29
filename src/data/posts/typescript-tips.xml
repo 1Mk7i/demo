@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<post>
+  <title>Поради по TypeScript</title>
+  <author>Майк Джонсон</author>
+  <date>2024-01-05</date>
+  <content>
+    <![CDATA[
+TypeScript додає статичну типізацію до JavaScript, що робить код більш надійним.
+
+## Основні поради:
+
+1. **Використовуйте строгі типи** - уникайте `any`
+2. **Створюйте інтерфейси** для об'єктів
+3. **Використовуйте юніон типи** для гнучкості
+
+## Приклад інтерфейсу:
+
+```typescript
+interface User {
+  id: number;
+  name: string;
+  email?: string;
+}
+```
+    ]]>
+  </content>
+</post>

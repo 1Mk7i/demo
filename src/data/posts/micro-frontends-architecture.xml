@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<post>
+  <title>Micro Frontends: архітектура майбутнього</title>
+  <author>Андрій Мельник</author>
+  <date>2024-02-05</date>
+  <content>
+    <![CDATA[
+Micro Frontends дозволяють великим командам незалежно розробляти та розгортати частини веб-додатків.
+
+## Що таке Micro Frontends:
+
+Micro Frontends - це архітектурний підхід, де веб-додаток складається з незалежних частин, кожна з яких розробляється окремою командою.
+
+## Основні принципи:
+
+1. **Технологічна незалежність** - кожна команда обирає свій стек
+2. **Незалежне розгортання** - команди можуть релізити окремо
+3. **Ізоляція команд** - мінімальна координація між командами
+4. **Відказостійкість** - падіння однієї частини не впливає на інші
+
+## Module Federation (Webpack 5):
+
+```javascript
+// webpack.config.js для host додатку
+const ModuleFederationPlugin = require('@module-federation/webpack');
+
+module.exports = {
+  mode: 'development',
+  devServer: {
+    port: 3000,
+  },
+  plugins: [
+    new ModuleFederationPlugin({
+      name: 'host',
+      remotes: {
+        mf_header: 'header@http://localhost:3001/remoteEntry.js',
+        mf_footer: 'footer@http://localhost:3002/remoteEntry.js',
+      },
+    }),
+  ],
+};
+```
+
+```javascript
+// webpack.config.js для micro frontend
+const ModuleFederationPlugin = require('@module-federation/webpack');
+
+module.exports = {
+  mode: 'development',
+  devServer: {
+    port: 3001,
+  },
+  plugins: [
+    new ModuleFederationPlugin({
+      name: 'header',
+      filename: 'remoteEntry.js',
+      exposes: {
+        './Header': './src/Header',
+      },
+      shared: {
+        react: { singleton: true },
+        'react-dom': { singleton: true },
+      },
+    }),
+  ],
+};
+```
+
+## Single-SPA Framework:
+
+```javascript
+// Реєстрація micro frontends
+import { registerApplication, start } from 'single-spa';
+
+registerApplication({
+  name: '@myorg/header',
+  app: () => System.import('@myorg/header'),
+  activeWhen: ['/'],
+});
+
+registerApplication({
+  name: '@myorg/products',
+  app: () => System.import('@myorg/products'),
+  activeWhen: ['/products'],
+});
+
+start();
+```
+
+## Стилізація та ізоляція CSS:
+
+```css
+/* Використання CSS Modules або Styled Components */
+.header-container {
+  /* Локальні стилі для header micro frontend */
+  background: var(--header-bg, #ffffff);
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+}
+
+/* Shadow DOM для повної ізоляції */
+:host {
+  display: block;
+  font-family: var(--app-font, 'Arial', sans-serif);
+}
+```
+
+## Спільний стан між micro frontends:
+
+```javascript
+// Event-driven архітектура
+class MicroFrontendBus {
+  constructor() {
+    this.events = {};
+  }
+  
+  emit(event, data) {
+    if (this.events[event]) {
+      this.events[event].forEach(callback => callback(data));
+    }
+  }
+  
+  on(event, callback) {
+    if (!this.events[event]) {
+      this.events[event] = [];
+    }
+    this.events[event].push(callback);
+  }
+  
+  off(event, callback) {
+    if (this.events[event]) {
+      this.events[event] = this.events[event].filter(cb => cb !== callback);
+    }
+  }
+}
+
+// Використання
+window.mfBus = new MicroFrontendBus();
+
+// В header micro frontend
+window.mfBus.emit('user-logged-in', { userId: 123 });
+
+// В products micro frontend
+window.mfBus.on('user-logged-in', (userData) => {
+  console.log('User logged in:', userData);
+});
+```
+
+## Тестування micro frontends:
+
+```javascript
+// E2E тестування з Cypress
+describe('Micro Frontends Integration', () => {
+  it('should load all micro frontends', () => {
+    cy.visit('/');
+    
+    // Перевірити що header завантажився
+    cy.get('[data-testid="header"]').should('be.visible');
+    
+    // Перевірити що products завантажився
+    cy.get('[data-testid="products"]').should('be.visible');
+    
+    // Перевірити взаємодію між micro frontends
+    cy.get('[data-testid="user-menu"]').click();
+    cy.get('[data-testid="products-for-user"]').should('be.visible');
+  });
+});
+```
+
+## Переваги та виклики:
+
+**Переваги:**
+- Масштабованість команд
+- Технологічна свобода
+- Незалежне розгортання
+- Відказостійкість
+
+**Виклики:**
+- Складність інтеграції
+- Управління залежностями
+- Продуктивність
+- Узгодженість UX
+
+Micro Frontends ідеально підходять для великих організацій з кількома командами розробки!
+    ]]>
+  </content>
+</post>

@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<post>
+  <title>GraphQL: революція в API дизайні</title>
+  <author>Софія Білоус</author>
+  <date>2024-01-28</date>
+  <content>
+    <![CDATA[
+GraphQL змінив підхід до розробки API, дозволяючи клієнтам запитувати тільки потрібні дані.
+
+## Переваги GraphQL над REST:
+
+1. **Один endpoint** - всі операції через одну URL
+2. **Точні запити** - клієнт визначає які дані потрібні
+3. **Strongly typed** - схема визначає типи даних
+4. **Introspection** - API саморепрезентується
+
+## Базова схема GraphQL:
+
+```graphql
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  posts: [Post!]!
+  createdAt: DateTime!
+}
+
+type Post {
+  id: ID!
+  title: String!
+  content: String!
+  author: User!
+  tags: [String!]!
+  publishedAt: DateTime
+}
+
+type Query {
+  user(id: ID!): User
+  users(limit: Int, offset: Int): [User!]!
+  post(id: ID!): Post
+  posts(authorId: ID, tag: String): [Post!]!
+}
+
+type Mutation {
+  createUser(input: CreateUserInput!): User!
+  updateUser(id: ID!, input: UpdateUserInput!): User!
+  deleteUser(id: ID!): Boolean!
+  
+  createPost(input: CreatePostInput!): Post!
+  publishPost(id: ID!): Post!
+}
+
+input CreateUserInput {
+  name: String!
+  email: String!
+}
+
+input UpdateUserInput {
+  name: String
+  email: String
+}
+
+input CreatePostInput {
+  title: String!
+  content: String!
+  authorId: ID!
+  tags: [String!]!
+}
+```
+
+## Resolver функції (Node.js):
+
+```javascript
+const { ApolloServer } = require('apollo-server-express');
+const { PrismaClient } = require('@prisma/client');
+
+const prisma = new PrismaClient();
+
+const resolvers = {
+  Query: {
+    user: async (_, { id }) => {
+      return await prisma.user.findUnique({
+        where: { id: parseInt(id) }
+      });
+    },
+    
+    users: async (_, { limit = 10, offset = 0 }) => {
+      return await prisma.user.findMany({
+        skip: offset,
+        take: limit
+      });
+    },
+    
+    posts: async (_, { authorId, tag }) => {
+      const where = {};
+      if (authorId) where.authorId = parseInt(authorId);
+      if (tag) where.tags = { has: tag };
+      
+      return await prisma.post.findMany({ where });
+    }
+  },
+  
+  Mutation: {
+    createUser: async (_, { input }) => {
+      return await prisma.user.create({
+        data: input
+      });
+    },
+    
+    createPost: async (_, { input }) => {
+      return await prisma.post.create({
+        data: {
+          ...input,
+          authorId: parseInt(input.authorId)
+        }
+      });
+    }
+  },
+  
+  User: {
+    posts: async (parent) => {
+      return await prisma.post.findMany({
+        where: { authorId: parent.id }
+      });
+    }
+  },
+  
+  Post: {
+    author: async (parent) => {
+      return await prisma.user.findUnique({
+        where: { id: parent.authorId }
+      });
+    }
+  }
+};
+```
+
+## Клієнтський код з Apollo Client:
+
+```javascript
+import { ApolloClient, InMemoryCache, gql, useQuery, useMutation } from '@apollo/client';
+
+const client = new ApolloClient({
+  uri: 'http://localhost:4000/graphql',
+  cache: new InMemoryCache()
+});
+
+const GET_USER_WITH_POSTS = gql`
+  query GetUserWithPosts($userId: ID!) {
+    user(id: $userId) {
+      id
+      name
+      email
+      posts {
+        id
+        title
+        publishedAt
+        tags
+      }
+    }
+  }
+`;
+
+const CREATE_POST = gql`
+  mutation CreatePost($input: CreatePostInput!) {
+    createPost(input: $input) {
+      id
+      title
+      author {
+        name
+      }
+    }
+  }
+`;
+
+// React компонент
+function UserProfile({ userId }) {
+  const { loading, error, data } = useQuery(GET_USER_WITH_POSTS, {
+    variables: { userId }
+  });
+  
+  const [createPost] = useMutation(CREATE_POST, {
+    refetchQueries: [GET_USER_WITH_POSTS]
+  });
+  
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+  
+  return (
+    <div>
+      <h1>{data.user.name}</h1>
+      <p>{data.user.email}</p>
+      
+      <h2>Posts:</h2>
+      {data.user.posts.map(post => (
+        <div key={post.id}>
+          <h3>{post.title}</h3>
+          <p>Tags: {post.tags.join(', ')}</p>
+        </div>
+      ))}
+      
+      <button onClick={() => {
+        createPost({
+          variables: {
+            input: {
+              title: "New Post",
+              content: "Content here",
+              authorId: userId,
+              tags: ["graphql", "tutorial"]
+            }
+          }
+        });
+      }}>
+        Create Post
+      </button>
+    </div>
+  );
+}
+```
+
+## Підписки (Subscriptions):
+
+```graphql
+type Subscription {
+  postAdded: Post!
+  userOnline(userId: ID!): User!
+}
+```
+
+```javascript
+// Server (з websockets)
+const { PubSub } = require('graphql-subscriptions');
+const pubsub = new PubSub();
+
+const resolvers = {
+  Subscription: {
+    postAdded: {
+      subscribe: () => pubsub.asyncIterator(['POST_ADDED'])
+    }
+  },
+  
+  Mutation: {
+    createPost: async (_, { input }) => {
+      const post = await prisma.post.create({ data: input });
+      pubsub.publish('POST_ADDED', { postAdded: post });
+      return post;
+    }
+  }
+};
+
+// Client
+const POST_ADDED_SUBSCRIPTION = gql`
+  subscription OnPostAdded {
+    postAdded {
+      id
+      title
+      author {
+        name
+      }
+    }
+  }
+`;
+
+function PostFeed() {
+  const { data, loading } = useSubscription(POST_ADDED_SUBSCRIPTION);
+  
+  useEffect(() => {
+    if (data) {
+      console.log('New post:', data.postAdded);
+    }
+  }, [data]);
+  
+  return <div>Real-time post feed</div>;
+}
+```
+
+## Кращі практики:
+
+- Використовуйте DataLoader для вирішення N+1 проблеми
+- Implements pagination для великих списків
+- Використовуйте фрагменти для переповикористання запитів
+- Валідуйте вхідні дані на рівні схеми
+- Кешуйте результати для покращення продуктивності
+
+GraphQL робить API більш гнучким та ефективним для клієнт-серверної взаємодії!
+    ]]>
+  </content>
+</post>

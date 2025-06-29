@@ -51,7 +51,7 @@ export default function About() {
         authorRole="UI/UX Designer & React Developer"
         description="Привіт! Я поєдную в собі дизайн-мислення з глибоким розумінням сучасних веб-технологій. Почав свій шлях як дизайнер, а згодом освоїв програмування, що дозволяє мені створювати не лише красиві, але й функціональні рішення. Моя пристрасть - це перетворення ідей у живі, інтерактивні веб-додатки."
         skills={["React", "TypeScript", "Next.js", "Tailwind CSS", "Figma", "UI/UX Design", "Vite", "JavaScript"]}
-        experience="3+ роки досвіду"
+        experience="2+ роки досвіду"
       />
 
       <TechStack />

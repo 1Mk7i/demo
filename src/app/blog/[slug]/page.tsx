@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { getPost, getAllPostSlugs, getAllPosts } from "@/utils/posts";
+import { ReactElement } from "react";
 
 interface PageProps {
   params: Promise<{
@@ -7,82 +9,10 @@ interface PageProps {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-// Симуляція даних постів
-const posts = {
-  "getting-started-with-nextjs": {
-    title: "Початок роботи з Next.js",
-    content: `
-      Next.js - це потужний React фреймворк, який дозволяє створювати швидкі та SEO-оптимізовані веб-додатки.
-      
-      ## Основні переваги Next.js:
-      
-      1. **Server-Side Rendering (SSR)** - рендеринг сторінок на сервері
-      2. **Static Site Generation (SSG)** - генерація статичних сайтів
-      3. **Автоматичне розділення коду** - оптимізація завантаження
-      4. **Вбудована оптимізація** - автоматична оптимізація зображень та шрифтів
-      
-      ## Швидкий старт:
-      
-      \`\`\`bash
-      npx create-next-app@latest my-app
-      cd my-app
-      npm run dev
-      \`\`\`
-      
-      Це все, що потрібно для початку роботи з Next.js!
-    `,
-    date: "2024-01-15",
-    author: "Джон Доу"
-  },
-  "react-best-practices": {
-    title: "Кращі практики React",
-    content: `
-      React - це бібліотека для створення користувацьких інтерфейсів. Ось кілька кращих практик.
-      
-      ## Організація компонентів:
-      
-      1. Використовуйте функціональні компоненти з хуками
-      2. Розділяйте логіку на кастомні хуки
-      3. Дотримуйтесь принципу єдиної відповідальності
-      
-      ## Оптимізація продуктивності:
-      
-      - Використовуйте React.memo для мемоізації компонентів
-      - Оптимізуйте ре-рендери з useCallback та useMemo
-      - Ледаче завантаження компонентів з React.lazy
-    `,
-    date: "2024-01-10",
-    author: "Джейн Сміт"
-  },
-  "typescript-tips": {
-    title: "Поради по TypeScript",
-    content: `
-      TypeScript додає статичну типізацію до JavaScript, що робить код більш надійним.
-      
-      ## Основні поради:
-      
-      1. **Використовуйте строгі типи** - уникайте \`any\`
-      2. **Створюйте інтерфейси** для об'єктів
-      3. **Використовуйте юніон типи** для гнучкості
-      
-      ## Приклад інтерфейсу:
-      
-      \`\`\`typescript
-      interface User {
-        id: number;
-        name: string;
-        email?: string;
-      }
-      \`\`\`
-    `,
-    date: "2024-01-05",
-    author: "Майк Джонсон"
-  }
-};
-
 // Генерація статичних параметрів для всіх постів
 export async function generateStaticParams() {
-  return Object.keys(posts).map((slug) => ({
+  const slugs = await getAllPostSlugs();
+  return slugs.map((slug) => ({
     slug,
   }));
 }
@@ -90,7 +20,7 @@ export async function generateStaticParams() {
 
 export default async function BlogPost({ params }: PageProps) {
   const { slug } = await params;
-  const post = posts[slug as keyof typeof posts];
+  const post = await getPost(slug);
 
   if (!post) {
     return (
@@ -106,6 +36,9 @@ export default async function BlogPost({ params }: PageProps) {
       </main>
     );
   }
+
+  const allPosts = await getAllPosts();
+  const relatedPosts = allPosts.filter(p => p.slug !== slug).slice(0, 2);
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
       <div className="container mx-auto px-4 py-12 max-w-4xl">
@@ -143,70 +76,105 @@ export default async function BlogPost({ params }: PageProps) {
             </header>
           </div>        
         <div className="prose prose-xl max-w-none px-8 py-12">
-          {post.content.split('\n\n').map((paragraph, index) => {
-            if (paragraph.startsWith('##')) {
-              return (
-                <h2 key={index} className="text-3xl font-bold mt-12 mb-6 text-gray-800 border-l-4 border-blue-500 pl-4">
-                  {paragraph.replace('## ', '')}
-                </h2>
-              );
+          {(() => {
+            const content = post.content;
+            const parts: ReactElement[] = [];
+            let currentIndex = 0;
+            
+            // Розділяємо контент, зберігаючи цілісність блоків коду
+            const paragraphs = content.split('\n\n');
+            let i = 0;
+            
+            while (i < paragraphs.length) {
+              let paragraph = paragraphs[i];
+              
+              // Якщо це початок блоку коду, збираємо весь блок
+              if (paragraph.startsWith('```')) {
+                while (i < paragraphs.length && !paragraph.includes('```', 3)) {
+                  i++;
+                  if (i < paragraphs.length) {
+                    paragraph += '\n\n' + paragraphs[i];
+                  }
+                }
+                
+                // Тепер обробляємо повний блок коду
+                const codeMatch = paragraph.match(/```(\w+)?\n?([\s\S]*?)```/);
+                const code = codeMatch ? codeMatch[2] : paragraph.replace(/```\w*\n?|\n?```$/g, '');
+                
+                parts.push(
+                  <div key={currentIndex++} className="my-8">
+                    <pre className="bg-gray-900 text-green-400 p-6 rounded-xl overflow-x-auto shadow-lg border border-gray-700">
+                      <code className="text-sm font-mono">{code}</code>
+                    </pre>
+                  </div>
+                );
+              }
+              // Заголовки
+              else if (paragraph.startsWith('##')) {
+                parts.push(
+                  <h2 key={currentIndex++} className="text-3xl font-bold mt-12 mb-6 text-gray-800 border-l-4 border-blue-500 pl-4">
+                    {paragraph.replace('## ', '')}
+                  </h2>
+                );
+              }
+              // Inline код
+              else if (paragraph.includes('`') && !paragraph.startsWith('```')) {
+                parts.push(
+                  <p key={currentIndex++} className="mb-6 text-lg leading-relaxed text-gray-700">
+                    {paragraph.split('`').map((part: string, partIndex: number) => 
+                      partIndex % 2 === 0 ? part : <code key={partIndex} className="bg-blue-100 text-blue-800 px-2 py-1 rounded font-mono text-sm">{part}</code>
+                    )}
+                  </p>
+                );
+              }
+              // Нумеровані списки
+              else if (paragraph.trim().match(/^\d+\./)) {
+                parts.push(
+                  <div key={currentIndex++} className="my-8 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border-l-4 border-blue-500">
+                    <ol className="list-decimal list-inside space-y-3">
+                      {paragraph.split('\n').filter((line: string) => line.trim()).map((item: string, itemIndex: number) => (
+                        <li key={itemIndex} className="text-lg text-gray-700 font-medium">{item.replace(/^\d+\.\s*/, '')}</li>
+                      ))}
+                    </ol>
+                  </div>
+                );
+              }
+              // Маркеровані списки
+              else if (paragraph.trim().startsWith('-')) {
+                parts.push(
+                  <div key={currentIndex++} className="my-8 bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-xl border-l-4 border-purple-500">
+                    <ul className="list-disc list-inside space-y-3">
+                      {paragraph.split('\n').filter((line: string) => line.trim()).map((item: string, itemIndex: number) => (
+                        <li key={itemIndex} className="text-lg text-gray-700">{item.replace(/^-\s*/, '')}</li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              }
+              // Звичайні параграфи
+              else if (paragraph.trim()) {
+                parts.push(
+                  <p key={currentIndex++} className="mb-6 text-lg leading-relaxed text-gray-700">
+                    {paragraph.trim()}
+                  </p>
+                );
+              }
+              
+              i++;
             }
-            if (paragraph.startsWith('```')) {
-              return (
-                <div key={index} className="my-8">
-                  <pre className="bg-gray-900 text-green-400 p-6 rounded-xl overflow-x-auto shadow-lg border border-gray-700">
-                    <code className="text-sm font-mono">{paragraph.replace(/```\w*\n?|\n?```/g, '')}</code>
-                  </pre>
-                </div>
-              );
-            }
-            if (paragraph.includes('`') && !paragraph.startsWith('```')) {
-              return (
-                <p key={index} className="mb-6 text-lg leading-relaxed text-gray-700">
-                  {paragraph.split('`').map((part, i) => 
-                    i % 2 === 0 ? part : <code key={i} className="bg-blue-100 text-blue-800 px-2 py-1 rounded font-mono text-sm">{part}</code>
-                  )}
-                </p>
-              );
-            }
-            if (paragraph.trim().match(/^\d+\./)) {
-              return (
-                <div key={index} className="my-8 bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border-l-4 border-blue-500">
-                  <ol className="list-decimal list-inside space-y-3">
-                    {paragraph.split('\n').filter(line => line.trim()).map((item, i) => (
-                      <li key={i} className="text-lg text-gray-700 font-medium">{item.replace(/^\d+\.\s*/, '')}</li>
-                    ))}
-                  </ol>
-                </div>
-              );
-            }
-            if (paragraph.trim().startsWith('-')) {
-              return (
-                <div key={index} className="my-8 bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-xl border-l-4 border-purple-500">
-                  <ul className="list-disc list-inside space-y-3">
-                    {paragraph.split('\n').filter(line => line.trim()).map((item, i) => (
-                      <li key={i} className="text-lg text-gray-700">{item.replace(/^-\s*/, '')}</li>
-                    ))}
-                  </ul>
-                </div>
-              );
-            }
-            return (
-              <p key={index} className="mb-6 text-lg leading-relaxed text-gray-700">
-                {paragraph.trim()}
-              </p>
-            );
-          })}
+            
+            return parts;
+          })()}
         </div>
       </article>
       
       {/* Related Articles Section */}
       <div className="mt-16 bg-white rounded-2xl shadow-xl p-8">
         <h3 className="text-2xl font-bold mb-6 text-gray-800">Схожі статті</h3>        <div className="grid md:grid-cols-2 gap-6">
-          {Object.entries(posts).filter(([postSlug]) => postSlug !== slug).slice(0, 2).map(([postSlug, relatedPost]) => (
-            <Link key={postSlug} href={`/blog/${postSlug}`} className="group">
+          {relatedPosts.map((relatedPost) => (
+            <Link key={relatedPost.slug} href={`/blog/${relatedPost.slug}`} className="group">
               <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-6 rounded-xl hover:shadow-lg transition-all duration-300 border hover:border-blue-300">
-                <h4 className="font-semibold mb-2 group-hover:text-blue-600 transition-colors">{relatedPost.title}</h4>
+                <h4 className="font-semibold mb-2 text-gray-800 group-hover:text-blue-600 transition-colors">{relatedPost.title}</h4>
                 <p className="text-gray-600 text-sm">{relatedPost.author} • {new Date(relatedPost.date).toLocaleDateString("uk-UA")}</p>
               </div>
             </Link>

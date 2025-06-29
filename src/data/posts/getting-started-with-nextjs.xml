@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<post>
+  <title>Початок роботи з Next.js</title>
+  <author>Джон Доу</author>
+  <date>2024-01-15</date>
+  <content>
+    <![CDATA[
+Next.js - це потужний React фреймворк, який дозволяє створювати швидкі та SEO-оптимізовані веб-додатки.
+
+## Основні переваги Next.js:
+
+1. **Server-Side Rendering (SSR)** - рендеринг сторінок на сервері
+2. **Static Site Generation (SSG)** - генерація статичних сайтів
+3. **Автоматичне розділення коду** - оптимізація завантаження
+4. **Вбудована оптимізація** - автоматична оптимізація зображень та шрифтів
+
+## Швидкий старт:
+
+```bash
+npx create-next-app@latest my-app
+cd my-app
+npm run dev
+```
+
+Це все, що потрібно для початку роботи з Next.js!
+    ]]>
+  </content>
+</post>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<post>
+  <title>Docker та контейнеризація у 2024</title>
+  <author>Олександр Петренко</author>
+  <date>2024-02-20</date>
+  <content>
+    <![CDATA[
+Docker революціонізував спосіб розробки, тестування та розгортання додатків. У 2024 році контейнеризація стала стандартом індустрії.
+
+## Основні переваги Docker:
+
+1. **Портабельність** - додаток працює однаково в будь-якому середовищі
+2. **Ізоляція** - контейнери не впливають один на одного
+3. **Ефективність** - менше ресурсів ніж віртуальні машини
+4. **Швидкість** - миттєвий запуск та зупинка
+
+## Базові команди Docker:
+
+```bash
+# Завантажити образ
+docker pull nginx:latest
+
+# Запустити контейнер
+docker run -d -p 80:80 --name my-nginx nginx
+
+# Переглянути запущені контейнери
+docker ps
+
+# Зупинити контейнер
+docker stop my-nginx
+
+# Видалити контейнер
+docker rm my-nginx
+```
+
+## Dockerfile для Node.js додатку:
+
+```dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci --only=production
+
+COPY . .
+
+EXPOSE 3000
+
+USER node
+
+CMD ["npm", "start"]
+```
+
+## Docker Compose для повного стеку:
+
+```yaml
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/myapp
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: myapp
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+```
+
+## Кращі практики 2024:
+
+- Використовуйте multi-stage builds для оптимізації розміру
+- Запускайте процеси від імені non-root користувача
+- Використовуйте .dockerignore для виключення непотрібних файлів
+- Регулярно оновлюйте базові образи для безпеки
+
+Docker спрощує DevOps процеси та робить розгортання передбачуваним!
+    ]]>
+  </content>
+</post>

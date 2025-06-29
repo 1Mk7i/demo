@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   HeroSection, 
   Section, 
@@ -8,98 +8,86 @@ import {
   Pagination,
   AnimationStyles 
 } from '@/components/ui';
+import { getAllPosts, PostWithSlug } from '@/utils/posts';
+
+interface BlogPost {
+  slug: string;
+  title: string;
+  excerpt: string;
+  date: string;
+  author: string;
+  readTime: string;
+  category: string;
+  tags: string[];
+}
 
 export default function Blog() {
+  const [posts, setPosts] = useState<BlogPost[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 6; // Кількість постів на сторінці
 
-  const posts = [
-    {
-      slug: "getting-started-with-nextjs",
-      title: "Початок роботи з Next.js",
-      excerpt: "Дізнайтеся, як швидко почати розробку з Next.js та створити свій перший проєкт з використанням найкращих практик сучасної веб-розробки.",
-      date: "2024-01-15",
-      author: "Джон Доу",
-      readTime: "5 хв читання",
-      category: "Next.js",
-      tags: ["Next.js", "React", "JavaScript", "Веб-розробка"]
-    },
-    {
-      slug: "react-best-practices",
-      title: "Кращі практики React",
-      excerpt: "Поради та рекомендації для ефективної розробки на React. Вивчіть передові техніки оптимізації продуктивності та структурування коду.",
-      date: "2024-01-10",
-      author: "Джейн Сміт",
-      readTime: "8 хв читання",
-      category: "React",
-      tags: ["React", "Performance", "Best Practices", "Hooks"]
-    },
-    {
-      slug: "typescript-tips",
-      title: "Поради по TypeScript",
-      excerpt: "Корисні поради для роботи з TypeScript у ваших проєктах. Дізнайтеся про передові типи, утиліти та паттерни розробки.",
-      date: "2024-01-05",
-      author: "Майк Джонсон",
-      readTime: "6 хв читання",
-      category: "TypeScript",
-      tags: ["TypeScript", "JavaScript", "Types", "Development"]
-    },
-    {
-      slug: "css-grid-flexbox",
-      title: "CSS Grid та Flexbox",
-      excerpt: "Вивчіть сучасні методи CSS-розкладки для створення адаптивних та гнучких інтерфейсів.",
-      date: "2024-01-03",
-      author: "Ліза Вілсон",
-      readTime: "7 хв читання",
-      category: "CSS",
-      tags: ["CSS", "Grid", "Flexbox", "Layout"]
-    },
-    {
-      slug: "node-js-performance",
-      title: "Оптимізація Node.js",
-      excerpt: "Техніки підвищення продуктивності Node.js-додатків та найкращі практики бекенд-розробки.",
-      date: "2024-01-01",
-      author: "Алекс Браун",
-      readTime: "10 хв читання",
-      category: "Node.js",
-      tags: ["Node.js", "Performance", "Backend", "Optimization"]
-    },
-    {
-      slug: "database-design-principles",
-      title: "Принципи проєктування БД",
-      excerpt: "Основи проєктування баз даних, нормалізація та оптимізація запитів для ефективної роботи з даними.",
-      date: "2023-12-28",
-      author: "Сара Девіс",
-      readTime: "12 хв читання",
-      category: "Database",
-      tags: ["Database", "SQL", "Design", "Optimization"]
-    },
-    {
-      slug: "api-security-best-practices",
-      title: "Безпека API",
-      excerpt: "Найкращі практики забезпечення безпеки API, аутентифікація, авторизація та захист від атак.",
-      date: "2023-12-25",
-      author: "Том Андерсон",
-      readTime: "9 хв читання",
-      category: "Security",
-      tags: ["API", "Security", "Authentication", "Best Practices"]
-    },
-    {
-      slug: "mobile-first-design",
-      title: "Mobile-First дизайн",
-      excerpt: "Підходи до створення адаптивного дизайну з пріоритетом мобільних пристроїв.",
-      date: "2023-12-20",
-      author: "Емма Тейлор",
-      readTime: "6 хв читання",
-      category: "Design",
-      tags: ["Mobile", "Design", "Responsive", "UX"]
-    }  ];
+  useEffect(() => {
+    // Завантажуємо пости з XML файлів
+    const loadPosts = async () => {
+      const xmlPosts = await getAllPosts();
+      
+      // Конвертуємо в формат для BlogGrid (додаємо додаткові поля)
+      const formattedPosts: BlogPost[] = xmlPosts.map((post: PostWithSlug) => ({
+        slug: post.slug,
+        title: post.title,
+        excerpt: post.content.split('\n\n')[0].slice(0, 150) + '...', // Перший абзац як анотація
+        date: post.date,
+        author: post.author,
+        readTime: `${Math.ceil(post.content.split(' ').length / 200)} хв читання`, // Приблизний час читання
+        category: getCategoryFromSlug(post.slug),
+        tags: getTagsFromSlug(post.slug)
+      }));
+      
+      setPosts(formattedPosts);
+    };
+
+    loadPosts();
+  }, []);
+
+  // Функція для визначення категорії за slug
+  const getCategoryFromSlug = (slug: string): string => {
+    if (slug.includes('nextjs')) return 'Next.js';
+    if (slug.includes('react')) return 'React';
+    if (slug.includes('typescript')) return 'TypeScript';
+    if (slug.includes('nixos')) return 'NixOS';
+    if (slug.includes('css')) return 'CSS';
+    if (slug.includes('docker')) return 'DevOps';
+    if (slug.includes('rust')) return 'Rust';
+    if (slug.includes('ai') || slug.includes('machine-learning')) return 'AI/ML';
+    if (slug.includes('micro-frontends')) return 'Architecture';
+    if (slug.includes('graphql')) return 'GraphQL';
+    return 'Веб-розробка';
+  };
+
+  // Функція для визначення тегів за slug
+  const getTagsFromSlug = (slug: string): string[] => {
+    const tagMap: { [key: string]: string[] } = {
+      'getting-started-with-nextjs': ['Next.js', 'React', 'JavaScript', 'Веб-розробка'],
+      'react-best-practices': ['React', 'Performance', 'Best Practices', 'Hooks'],
+      'typescript-tips': ['TypeScript', 'JavaScript', 'Types', 'Development'],
+      'nixos-tips': ['NixOS', 'Linux', 'System Administration', 'DevOps'],
+      'css-grid-flexbox': ['CSS', 'Grid', 'Flexbox', 'Layout', 'Responsive Design'],
+      'docker-containerization-2024': ['Docker', 'DevOps', 'Containers', 'Infrastructure'],
+      'rust-systems-programming': ['Rust', 'Systems Programming', 'Memory Safety', 'Performance'],
+      'ai-machine-learning-javascript': ['AI', 'Machine Learning', 'TensorFlow.js', 'JavaScript'],
+      'micro-frontends-architecture': ['Micro Frontends', 'Architecture', 'Scalability', 'JavaScript'],
+      'graphql-api-revolution': ['GraphQL', 'API', 'Apollo', 'Backend']
+    };
+    return tagMap[slug] || ['Веб-розробка'];
+  };
 
   // Розрахунок пагінації
   const totalPages = Math.ceil(posts.length / postsPerPage);
   const startIndex = (currentPage - 1) * postsPerPage;
   const endIndex = startIndex + postsPerPage;
-  const currentPosts = posts.slice(startIndex, endIndex);  const handlePageChange = (page: number) => {
+  const currentPosts = posts.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
     console.log(`Зміна сторінки на: ${page}`);
     setCurrentPage(page);
     setTimeout(() => {

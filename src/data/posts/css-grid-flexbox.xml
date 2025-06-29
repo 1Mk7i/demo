@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<post>
+  <title>CSS Grid та Flexbox</title>
+  <author>Ліза Вілсон</author>
+  <date>2024-01-03</date>
+  <content>
+    <![CDATA[
+Сучасний CSS надає потужні інструменти для створення гнучких та адаптивних макетів.
+
+## CSS Grid - для двовимірних макетів:
+
+CSS Grid ідеально підходить для створення складних макетів із рядками та стовпцями.
+
+```css
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-gap: 20px;
+  padding: 20px;
+}
+
+.grid-item {
+  background: #f0f0f0;
+  padding: 20px;
+  text-align: center;
+}
+```
+
+## Flexbox - для одновимірних макетів:
+
+Flexbox чудово підходить для вирівнювання елементів у рядку або стовпці.
+
+```css
+.flex-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.flex-item {
+  flex: 1;
+  min-width: 200px;
+  padding: 15px;
+  background: #e9ecef;
+}
+```
+
+## Коли використовувати що:
+
+- **Grid** для складних макетів із рядками та стовпцями
+- **Flexbox** для простого вирівнювання та розподілу простору
+- **Комбінація** обох для максимальної гнучкості
+
+Разом Grid та Flexbox дають необмежені можливості для створення сучасних інтерфейсів!
+    ]]>
+  </content>
+</post>

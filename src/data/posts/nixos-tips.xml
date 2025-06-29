@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<post>
+  <title>Поради по NixOS</title>
+  <author>Олексій Іванов</author>
+  <date>2024-01-05</date>
+  <content>
+    <![CDATA[
+NixOS - це унікальна операційна система, яка використовує декларативний підхід до конфігурації.
+
+## Основні переваги NixOS:
+
+1. **Декларативна конфігурація** - вся система описується в одному файлі
+2. **Атомарні оновлення** - можливість відкату до попереднього стану
+3. **Відтворюваність** - однакова конфігурація на різних машинах
+4. **Ізоляція пакетів** - відсутність конфліктів між версіями
+
+## Корисні команди:
+
+```bash
+# Перебудова системи
+sudo nixos-rebuild switch
+
+# Оновлення каналів
+sudo nix-channel --update
+
+# Видалення старих поколінь
+sudo nix-env --delete-generations old -p
+
+# Збирання сміття
+sudo nix-collect-garbage -d
+
+# Збирання сміття та оптимізація сховища
+sudo nix-store --optimize
+```
+
+## Приклад конфігурації:
+
+```nix
+{ config, pkgs, ... }:
+
+{
+  imports = [ ./hardware-configuration.nix ];
+
+  boot.loader.systemd-boot.enable = true;
+  networking.hostName = "nixos";
+  
+  environment.systemPackages = with pkgs; [
+    vim
+    git
+    firefox
+  ];
+}
+```
+
+NixOS надає потужні інструменти для управління системою!
+    ]]>
+  </content>
+</post>

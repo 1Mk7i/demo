@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<post>
+  <title>Rust: безпечне системне програмування</title>
+  <author>Марина Коваленко</author>
+  <date>2024-02-15</date>
+  <content>
+    <![CDATA[
+Rust набирає популярність як мова для системного програмування, пропонуючи безпеку пам'яті без збирача сміття.
+
+## Чому Rust у 2024 році:
+
+1. **Memory Safety** - запобігання segfault та buffer overflow
+2. **Zero-cost abstractions** - високорівневі конструкції без втрати продуктивності
+3. **Concurrency** - безпечне паралельне програмування
+4. **Ecosystem** - багатий набір бібліотек (crates)
+
+## Основи синтаксису:
+
+```rust
+// Структура з методами
+struct Rectangle {
+    width: u32,
+    height: u32,
+}
+
+impl Rectangle {
+    fn area(&self) -> u32 {
+        self.width * self.height
+    }
+    
+    fn can_hold(&self, other: &Rectangle) -> bool {
+        self.width > other.width && self.height > other.height
+    }
+}
+
+fn main() {
+    let rect1 = Rectangle {
+        width: 30,
+        height: 50,
+    };
+    
+    println!("Area: {}", rect1.area());
+}
+```
+
+## Ownership та Borrowing:
+
+```rust
+fn main() {
+    let s1 = String::from("hello");
+    let s2 = s1; // s1 moved to s2
+    
+    // println!("{}", s1); // Error! s1 no longer valid
+    
+    let s3 = String::from("world");
+    let len = calculate_length(&s3); // Borrowing
+    println!("Length of '{}' is {}", s3, len); // s3 still valid
+}
+
+fn calculate_length(s: &String) -> usize {
+    s.len()
+} // s goes out of scope, but nothing happens because it's a reference
+```
+
+## Async/Await в Rust:
+
+```rust
+use tokio;
+
+#[tokio::main]
+async fn main() {
+    let future1 = fetch_data("url1");
+    let future2 = fetch_data("url2");
+    
+    let (result1, result2) = tokio::join!(future1, future2);
+    
+    println!("Results: {:?}, {:?}", result1, result2);
+}
+
+async fn fetch_data(url: &str) -> Result<String, Box<dyn std::error::Error>> {
+    let response = reqwest::get(url).await?;
+    let body = response.text().await?;
+    Ok(body)
+}
+```
+
+## Популярні crates:
+
+- **serde** - серіалізація та десеріалізація
+- **tokio** - асинхронний runtime
+- **clap** - парсинг аргументів командного рядка
+- **diesel** - ORM для баз даних
+- **actix-web** - веб-фреймворк
+
+Rust ідеально підходить для CLI інструментів, веб-серверів, системних утиліт та embedded розробки!
+    ]]>
+  </content>
+</post>
